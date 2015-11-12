@@ -1,0 +1,169 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2016_conference,times}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{amsmath}
+
+\usetikzlibrary{arrows,positioning}
+
+\title{Video Classification using Three-Dimensional Attention}
+
+\author{
+Ji Q. Ren \& Yevgeny LeNet \\
+Department of Computational Neuroscience \\
+University of the Witwatersrand \\
+Joburg, South Africa \\
+\texttt{\{robot,net\}@wits.ac.za} \\
+\AND
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email}
+}
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+\newcommand{\veci}[1]{\mathbf{#1}}
+\newcommand{\vecsub}[2]{#1_{\vecsub{#1}}}
+
+%\iclrfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+WRITEME
+\end{abstract}
+
+\section{Model description}
+
+Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
+A glimpse corresponds to a three-dimensional hyperrectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than that of the video.
+The resampling process is described in \ref{sec:resampling}.
+
+Each resampled glimpse $v^{(t)}$ is passed through a convolutional network, concatenated with its parameters $\theta^{(t)}$ and fed to a fully-connected network to obtain the input $x^{(t)}$ to the next step of the recurrent network.
+
+We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
+
+Figure \ref{fig:model} shows a schematic view of the model.
+
+\subsection{Resampling}
+\label{sec:resampling}
+
+We employ a differential cropping operator similar to that used in DRAW \cite{draw}.
+The intensity of each pixel in the glimpse is a linear combination of the intensities of all the pixels in the video, with coefficients determined by Gaussian kernels.
+In our case however, the kernel stride, standard deviation and intensity scaling factor are determined by a single scale parameter, whereas \cite{draw} has the network predict each of them independently.
+
+The kernel covariance is constrained to be diagonal, which allows to resample across each of the temporal, vertical and horizontal data dimensions independently.
+In the one-dimensional case, glimpse pixels $v_i$ relate to video pixels $V_i$ by
+
+\begin{equation}
+v_i = \sum_{\tilde{i}} \phi(\delta,\sigma) V_{\tilde{i}} \\
+\delta =  \frac{i - m/2}{s} + l - \tilde{i} \\
+\sigma =  \frac{\alpha}{\min(s, 1)}
+\end{equation}
+
+where $i$ is a glimpse pixel index, $\tilde{i}$ is a video pixel index, $m$ is the size of the glimpse in pixels, and $l$ and $s$ are the location and scale of the glimpse, respectively.
+$\phi( \delta, \sigma ) = \frac{1}{\sqrt{2 \pi}\sigma} \exp{- \frac{1}{2} \frac{\delta^2}{\sigma^2}}$ is the Gaussian filter.
+
+\subsection{Kernel truncation}
+
+We further depart from \cite{draw} by truncating the Gaussian kernels at three deviations from their means.
+In practice we implement this by projecting the corners of the glimpse into the space of video indices and cropping a box around them with the desired margin.
+The outermost kernels are thus more truncated than the interior ones, and the pixels in the center of the glimpse are virtually untruncated.
+The resulting equations are still differentiable, with the gradient providing information on where to move inside the box.
+We have found this truncation to have little effect on training, while allowing significant computational savings.
+
+As was done for images in \cite{Mnih2014} \cite{Ba2014}
+
+\begin{figure}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=.5in,
+                    semithick]
+  \path   ( 0, 0) node (state00) {$h^{(0)}_0$}
+         +( 0, 3) node (state01) {$h^{(0)}_1$}
+        ++( 3, 0) node (state10) {$h^{(1)}_0$}
+         +( 0, 3) node (state11) {$h^{(1)}_1$}
+        ++( 3, 0) node (state20) {$h^{(2)}_0$}
+         +( 0, 3) node (state21) {$h^{(2)}_1$}
+        ++( 3, 0) node (state30) {$h^{(3)}_0$}
+         +( 0, 3) node (state31) {$h^{(3)}_1$}
+        ++( 3, 0) node (state40) {$h^{(4)}_0$}
+         +( 0, 3) node (state41) {$h^{(4)}_1$};
+
+  \node (theta1)   [below right of=state01]{$\theta^{(1)}$};
+  \node (theta2)   [below right of=state11]{$\theta^{(2)}$};
+  \node (theta3)   [below right of=state21]{$\theta^{(3)}$};
+  \node (theta4)   [below right of=state31]{$\theta^{(4)}$};
+
+  \node (glimpse1) [right of=theta1]{$v^{(1)}$};
+  \node (glimpse2) [right of=theta2]{$v^{(2)}$};
+  \node (glimpse3) [right of=theta3]{$v^{(3)}$};
+  \node (glimpse4) [right of=theta4]{$v^{(4)}$};
+  
+  \node (input1)   [below of=glimpse1]{$x^{(1)}$};
+  \node (input2)   [below of=glimpse2]{$x^{(2)}$};
+  \node (input3)   [below of=glimpse3]{$x^{(3)}$};
+  \node (input4)   [below of=glimpse4]{$x^{(4)}$};
+
+  \node (yhat1)    [below right of=state10]{$\hat{y}^{(1)}$};
+  \node (yhat2)    [below right of=state20]{$\hat{y}^{(2)}$};
+  \node (yhat3)    [below right of=state30]{$\hat{y}^{(3)}$};
+  \node (yhat4)    [below right of=state40]{$\hat{y}^{(4)}$};
+  
+  \node (image)    [above of=state11]{$V$};
+
+  \path (state00)  edge (state10) edge (state01)
+        (state10)  edge (state20) edge (state11) edge (yhat1)
+        (state20)  edge (state30) edge (state21) edge (yhat2)
+        (state30)  edge (state40) edge (state31) edge (yhat3)
+        (state40)                 edge (state41) edge (yhat4)
+
+        (state01)  edge (state11)
+        (state11)  edge (state21) edge (theta2)
+        (state21)  edge (state31) edge (theta3)
+        (state31)  edge (state41) edge (theta4)
+        (state41)
+        
+        (theta1)   edge (glimpse1) edge (input1)
+        (theta2)   edge (glimpse2) edge (input2)
+        (theta3)   edge (glimpse3) edge (input3)
+        (theta4)   edge (glimpse4) edge (input4)
+
+        (glimpse1) edge (input1)
+        (glimpse2) edge (input2)
+        (glimpse3) edge (input3)
+        (glimpse4) edge (input4)
+
+        (input1)   edge (state10)
+        (input2)   edge (state20)
+        (input3)   edge (state30)
+        (input4)   edge (state40)
+
+        (image)    edge [bend right] (glimpse1)
+                   edge [bend  left] (glimpse2)
+                   edge [bend  left] (glimpse3)
+                   edge [bend  left] (glimpse4);
+\end{tikzpicture}
+\label{fig:model}
+\end{figure}
+
+\section{Dataset}
+
+We introduce a new fine-grained video classification dataset derived from the Cluttered MNIST dataset \cite{clutteredmnist}.
+As in Cluttered MNIST, the examples consist of MNIST digits placed on a larger canvas in the presence of clutter.
+Our dataset differs from Cluttered MNIST in that both the digits and the clutter move across the canvas.
+Additionally, we partially occlude the digit by superimposing black bars perpendicular to its direction of travel.
+This ensures that no one frame displays the digit, and thus solving the task requires aggregation of information over time.
+
+\subsubsection*{Acknowledgments}
+
+WRITEME
+
+\bibliography{iclr2016_conference}
+\bibliographystyle{iclr2016_conference}
+
+\end{document}
