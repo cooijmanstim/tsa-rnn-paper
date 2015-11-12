@@ -6,23 +6,15 @@
 \usepackage{tikz}
 \usepackage{amsmath}
 
-\usetikzlibrary{arrows,positioning}
+\usetikzlibrary{arrows}
 
-\title{Video Classification using Three-Dimensional Attention}
+\title{Three-Dimensional Attention for Video Classification}
 
 \author{
-Ji Q. Ren \& Yevgeny LeNet \\
-Department of Computational Neuroscience \\
-University of the Witwatersrand \\
-Joburg, South Africa \\
-\texttt{\{robot,net\}@wits.ac.za} \\
-\AND
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email}
+Tim Cooijmans, Nicolas Ballas, Aaron Courville \\
+Universit\'e de Montr\'eal \\
+\texttt{\{tim.cooijmans,nicolas.ballas,aaron.courville\}@umontreal.ca}
 }
-
 
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
@@ -36,8 +28,12 @@ Address \\
 \maketitle
 
 \begin{abstract}
-WRITEME
+We introduce a recurrent model for video classification that employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures. We show performance of our model on this dataset as well as on the UCF101 human activity recognition dataset.
 \end{abstract}
+
+\section{Introduction}
+
+\section{Related work}
 
 \section{Model description}
 
@@ -47,7 +43,7 @@ The resampling process is described in \ref{sec:resampling}.
 
 Each resampled glimpse $v^{(t)}$ is passed through a convolutional network, concatenated with its parameters $\theta^{(t)}$ and fed to a fully-connected network to obtain the input $x^{(t)}$ to the next step of the recurrent network.
 
-We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
+Like \cite{Ba2014}, we use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
 
 Figure \ref{fig:model} shows a schematic view of the model.
 
@@ -56,19 +52,24 @@ Figure \ref{fig:model} shows a schematic view of the model.
 
 We employ a differential cropping operator similar to that used in DRAW \cite{draw}.
 The intensity of each pixel in the glimpse is a linear combination of the intensities of all the pixels in the video, with coefficients determined by Gaussian kernels.
-In our case however, the kernel stride, standard deviation and intensity scaling factor are determined by a single scale parameter, whereas \cite{draw} has the network predict each of them independently.
-
 The kernel covariance is constrained to be diagonal, which allows to resample across each of the temporal, vertical and horizontal data dimensions independently.
 In the one-dimensional case, glimpse pixels $v_i$ relate to video pixels $V_i$ by
 
 \begin{equation}
-v_i = \sum_{\tilde{i}} \phi(\delta,\sigma) V_{\tilde{i}} \\
-\delta =  \frac{i - m/2}{s} + l - \tilde{i} \\
-\sigma =  \frac{\alpha}{\min(s, 1)}
+\begin{split}
+v_i &= \sum_{\tilde{i}} \phi(\delta,\sigma) V_{\tilde{i}} \\
+\delta & =  \frac{i - m/2}{s} + l - \tilde{i} \\
+\sigma & =  \frac{\alpha}{\min(s, 1)}
+\end{split}
 \end{equation}
 
 where $i$ is a glimpse pixel index, $\tilde{i}$ is a video pixel index, $m$ is the size of the glimpse in pixels, and $l$ and $s$ are the location and scale of the glimpse, respectively.
 $\phi( \delta, \sigma ) = \frac{1}{\sqrt{2 \pi}\sigma} \exp{- \frac{1}{2} \frac{\delta^2}{\sigma^2}}$ is the Gaussian filter.
+
+Note that the kernel stride, standard deviation and intensity scaling factor are determined by a single scale parameter $s$.
+Disconnecting these parameters as is done in \cite{draw} would give the model the freedom to introduce severe resampling artifacts such as aliasing, unnecessary blurring and noise.
+The influence of $s$ on $\sigma$ is bounded to avoid too narrow kernels when zooming in beyond the native resolution of the input.
+The hyperparameter $\alpha$ trades off aliasing and blurring; after visual inspection of the quality of the patches we chose to set it to $0.5$.
 
 \subsection{Kernel truncation}
 
@@ -77,8 +78,6 @@ In practice we implement this by projecting the corners of the glimpse into the 
 The outermost kernels are thus more truncated than the interior ones, and the pixels in the center of the glimpse are virtually untruncated.
 The resulting equations are still differentiable, with the gradient providing information on where to move inside the box.
 We have found this truncation to have little effect on training, while allowing significant computational savings.
-
-As was done for images in \cite{Mnih2014} \cite{Ba2014}
 
 \begin{figure}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=.5in,
@@ -154,7 +153,7 @@ As was done for images in \cite{Mnih2014} \cite{Ba2014}
 \section{Dataset}
 
 We introduce a new fine-grained video classification dataset derived from the Cluttered MNIST dataset \cite{clutteredmnist}.
-As in Cluttered MNIST, the examples consist of MNIST digits placed on a larger canvas in the presence of clutter.
+The examples consist of MNIST digits placed on a larger canvas in the presence of clutter.
 Our dataset differs from Cluttered MNIST in that both the digits and the clutter move across the canvas.
 Additionally, we partially occlude the digit by superimposing black bars perpendicular to its direction of travel.
 This ensures that no one frame displays the digit, and thus solving the task requires aggregation of information over time.
