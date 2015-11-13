@@ -28,8 +28,7 @@
 \maketitle
 
 \begin{abstract}
-Motivated by recent success of visual attention architectures on images, we explore two recurrent models of visual attention on video domain. Our first model employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. Our second model employs a similar attention mechanism, but treats the video as a stream of images and applies a two-dimensional convolutional neural network. In addition, we introduce a synthetic video classification task that requires aggregation of information over time. Potentials of our dataset is measured by extensive set of experiments by three- and two- dimensional convolutional architectures. We also evaluate our models on the Cooking2 and UCF101 datasets.
-%We introduce a recurrent model for video classification that employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures. We show performance of our model on this dataset as well as on the UCF101 human activity recognition dataset.
+We explore two approaches for transferring the recent success of visual attention models on images to the video domain. Our first model employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. Our second model employs a similar attention mechanism, but treats the video as a stream of images and applies a two-dimensional convolutional neural network. In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures. We evaluate our models on this task, as well as on the Cooking2 and UCF101 datasets.
 \end{abstract}
 
 \section{Introduction}
@@ -52,7 +51,7 @@ Despite all the success that convolutional neural networks achieved they are sti
 
 \textbf{our decision of attention just in 1 or 2 sentences as a link to the next chapter}
 
-\section{Modle description 1}
+\section{Three-dimensional attention}
 
 Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
 A glimpse corresponds to a three-dimensional hyperrectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than that of the video.
@@ -64,10 +63,35 @@ We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2
 
 Figure \ref{fig:model} shows a schematic view of the model.
 
-\subsection{Resampling}
+\include{threedfigure}
+
+\section{Two-dimensional attention}
+
+\section{Model description 2}
+Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
+Our model is built as an recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
+\begin{enumerate}
+\item We down-sample the frame $F_{t}$ with the $ds$ scale. Then this down-sampled frame is flattened to a vector, $DS_{F_{t}}$.
+\begin{equation}
+DS_{F_{t}}=Flatten(ds\times F_{t})
+\end{equation} 
+\item A concatenation of the previous time-step LSTM unit, location, scale and the down-sampled version of the current frame is given as an input to a 2 layers \textbf{multiple layer perceptron (mlp)}.
+\begin{equation}
+mlp-Input_{t}=Concat\left [h_{t-1}, L_{x_{t-1}},L_{y_{t-1}}, S_{t-1}, DS_{F_{t}}\right]
+\end{equation} 
+\begin{equation}
+mlp_Output_{t}=Concat\left [ L_{x_{t}}, L_{y_{t}}, S_{t}\right]
+\end{equation}
+where the output is a vector of 3 numbers.
+\item Our attention model takes the output of the mlp as input and gives back a cropped version of the frame, $F_{t}$ with a fixed size. Then the obtained attention is given to a pre-trained convent. The output vector of the pre-trained convent is concatenated by the location, $L_{t}$ and scale, $S_{t}$ of the attention at the current time-step. Then 4 copies of the obtained vector is given to the LSTM unit of $h_{t}$.
+\end{enumerate}
+
+\section{Resampling}
 \label{sec:resampling}
 
 We employ a differential cropping operator similar to that used in DRAW \cite{draw}.
+It is explained here for the three-dimensional case in which the input is
+a video, but the application to two-dimensional video frames is similar.
 The intensity of each pixel in the glimpse is a linear combination of the intensities of all the pixels in the video, with coefficients determined by Gaussian kernels.
 The kernel covariance is constrained to be diagonal, which allows to resample across each of the temporal, vertical and horizontal data dimensions independently.
 In the one-dimensional case, glimpse pixels $v_i$ relate to video pixels $V_i$ by
@@ -88,103 +112,12 @@ Disconnecting these parameters as is done in \cite{draw} would give the model th
 The influence of $s$ on $\sigma$ is bounded to avoid too narrow kernels when zooming in beyond the native resolution of the input.
 The hyperparameter $\alpha$ trades off aliasing and blurring; by visual inspection of the quality of the patches we chose to set it to $0.5$.
 
-\subsection{Kernel truncation}
-
 We further depart from \cite{draw} by truncating the Gaussian kernels at three deviations from their means.
 In practice we implement this by projecting the corners of the glimpse into the space of video indices and cropping a box around them with the desired margin.
 The outermost kernels are thus more truncated than the interior ones, and the pixels in the center of the glimpse are virtually untruncated.
 The resulting equations are still differentiable, with the gradient providing information on where to move inside the box.
 We have found this truncation to have little effect on training, while allowing significant computational savings.
 
-\begin{figure}
-\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=.5in,
-                    semithick]
-  \path   ( 0, 0) node (state00) {$h^{(0)}_0$}
-         +( 0, 3) node (state01) {$h^{(0)}_1$}
-        ++( 3, 0) node (state10) {$h^{(1)}_0$}
-         +( 0, 3) node (state11) {$h^{(1)}_1$}
-        ++( 3, 0) node (state20) {$h^{(2)}_0$}
-         +( 0, 3) node (state21) {$h^{(2)}_1$}
-        ++( 3, 0) node (state30) {$h^{(3)}_0$}
-         +( 0, 3) node (state31) {$h^{(3)}_1$}
-        ++( 3, 0) node (state40) {$h^{(4)}_0$}
-         +( 0, 3) node (state41) {$h^{(4)}_1$};
-
-  \node (theta1)   [below right of=state01]{$\theta^{(1)}$};
-  \node (theta2)   [below right of=state11]{$\theta^{(2)}$};
-  \node (theta3)   [below right of=state21]{$\theta^{(3)}$};
-  \node (theta4)   [below right of=state31]{$\theta^{(4)}$};
-
-  \node (glimpse1) [right of=theta1]{$v^{(1)}$};
-  \node (glimpse2) [right of=theta2]{$v^{(2)}$};
-  \node (glimpse3) [right of=theta3]{$v^{(3)}$};
-  \node (glimpse4) [right of=theta4]{$v^{(4)}$};
-  
-  \node (input1)   [below of=glimpse1]{$x^{(1)}$};
-  \node (input2)   [below of=glimpse2]{$x^{(2)}$};
-  \node (input3)   [below of=glimpse3]{$x^{(3)}$};
-  \node (input4)   [below of=glimpse4]{$x^{(4)}$};
-
-  \node (yhat1)    [below right of=state10]{$\hat{y}^{(1)}$};
-  \node (yhat2)    [below right of=state20]{$\hat{y}^{(2)}$};
-  \node (yhat3)    [below right of=state30]{$\hat{y}^{(3)}$};
-  \node (yhat4)    [below right of=state40]{$\hat{y}^{(4)}$};
-  
-  \node (image)    [above of=state11]{$V$};
-
-  \path (state00)  edge (state10) edge (state01)
-        (state10)  edge (state20) edge (state11) edge (yhat1)
-        (state20)  edge (state30) edge (state21) edge (yhat2)
-        (state30)  edge (state40) edge (state31) edge (yhat3)
-        (state40)                 edge (state41) edge (yhat4)
-
-        (state01)  edge (state11)
-        (state11)  edge (state21) edge (theta2)
-        (state21)  edge (state31) edge (theta3)
-        (state31)  edge (state41) edge (theta4)
-        (state41)
-        
-        (theta1)   edge (glimpse1) edge (input1)
-        (theta2)   edge (glimpse2) edge (input2)
-        (theta3)   edge (glimpse3) edge (input3)
-        (theta4)   edge (glimpse4) edge (input4)
-
-        (glimpse1) edge (input1)
-        (glimpse2) edge (input2)
-        (glimpse3) edge (input3)
-        (glimpse4) edge (input4)
-
-        (input1)   edge (state10)
-        (input2)   edge (state20)
-        (input3)   edge (state30)
-        (input4)   edge (state40)
-
-        (image)    edge [bend right] (glimpse1)
-                   edge [bend  left] (glimpse2)
-                   edge [bend  left] (glimpse3)
-                   edge [bend  left] (glimpse4);
-\end{tikzpicture}
-\label{fig:model}
-\end{figure}
-
-\section{Model description 2}
-Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
-Our model is built as an recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
-\begin{enumerate}
-\item We down-sample the frame $F_{t}$ with the $ds$ scale. Then this down-sampled frame is flattened to a vector, $DS_{F_{t}}$.
-\begin{equation}
-DS_{F_{t}}=Flatten(ds\times F_{t})
-\end{equation} 
-\item A concatenation of the previous time-step LSTM unit, location, scale and the down-sampled version of the current frame is given as an input to a 2 layers \textbf{multiple layer perceptron (mlp)}.
-\begin{equation}
-mlp-Input_{t}=Concat\left [h_{t-1}, L_{x_{t-1}},L_{y_{t-1}}, S_{t-1}, DS_{F_{t}}\right]
-\end{equation} 
-\begin{equation}
-mlp_Output_{t}=Concat\left [ L_{x_{t}}, L_{y_{t}}, S_{t}\right]
-\end{equation}
-where the output is a vector of 3 numbers.
-\item Our attention model takes the output of the mlp as input and gives back a cropped version of the frame, $F_{t}$ with a fixed size. Then the obtained attention is given to a pre-trained convent. The output vector of the pre-trained convent is concatenated by the location, $L_{t}$ and scale, $S_{t}$ of the attention at the current time-step. Then 4 copies of the obtained vector is given to the LSTM unit of $h_{t}$.
-\end{enumerate}
 \section{Datasets}
 \subsection{CMV: Cluttered MNIST Videos}
 
