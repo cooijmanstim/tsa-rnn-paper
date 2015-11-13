@@ -28,7 +28,11 @@
 \maketitle
 
 \begin{abstract}
-We explore two approaches for transferring the recent success of visual attention models on images to the video domain. Our first model employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. Our second model employs a similar attention mechanism, but treats the video as a stream of images and applies a two-dimensional convolutional neural network. In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures. We evaluate our models on this task, as well as on the Cooking2 and UCF101 datasets.
+We explore two approaches for transferring the recent success of visual attention models on images to the video domain.
+Our first model employs a differentiable attention mechanism to apply a two-dimensional convolutional neural network to salient regions of consecutive frames at varying resolutions.
+Next, we generalize the attention mechanism to three dimensions and propose a second model that similarly applies a three-dimensional convolutional neural network to spatiotemporal regions of video.
+In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures.
+We evaluate our models on this task, as well as on the Cooking2 and UCF101 datasets.
 \end{abstract}
 
 \section{Introduction}
@@ -51,23 +55,8 @@ Despite all the success that convolutional neural networks achieved they are sti
 
 \textbf{our decision of attention just in 1 or 2 sentences as a link to the next chapter}
 
-\section{Three-dimensional attention}
-
-Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
-A glimpse corresponds to a three-dimensional hyperrectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than that of the video.
-The resampling process is described in \ref{sec:resampling}.
-
-Each resampled glimpse $v^{(t)}$ is passed through a convolutional network, concatenated with its parameters $\theta^{(t)}$ and fed to a fully-connected network to obtain the input $x^{(t)}$ to the next step of the recurrent network.
-
-We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
-
-Figure \ref{fig:model} shows a schematic view of the model.
-
-\include{threedfigure}
-
 \section{Two-dimensional attention}
 
-\section{Model description 2}
 Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
 Our model is built as an recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
 \begin{enumerate}
@@ -85,6 +74,20 @@ mlp_Output_{t}=Concat\left [ L_{x_{t}}, L_{y_{t}}, S_{t}\right]
 where the output is a vector of 3 numbers.
 \item Our attention model takes the output of the mlp as input and gives back a cropped version of the frame, $F_{t}$ with a fixed size. Then the obtained attention is given to a pre-trained convent. The output vector of the pre-trained convent is concatenated by the location, $L_{t}$ and scale, $S_{t}$ of the attention at the current time-step. Then 4 copies of the obtained vector is given to the LSTM unit of $h_{t}$.
 \end{enumerate}
+
+\section{Three-dimensional attention}
+
+Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
+A glimpse corresponds to a three-dimensional hyperrectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than that of the video.
+The resampling process is described in \ref{sec:resampling}.
+
+Each resampled glimpse $v^{(t)}$ is passed through a convolutional network, concatenated with its parameters $\theta^{(t)}$ and fed to a fully-connected network to obtain the input $x^{(t)}$ to the next step of the recurrent network.
+
+We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
+
+Figure \ref{fig:model} shows a schematic view of the model.
+
+\include{threedfigure}
 
 \section{Resampling}
 \label{sec:resampling}
