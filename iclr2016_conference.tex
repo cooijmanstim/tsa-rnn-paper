@@ -8,13 +8,13 @@
 
 \usetikzlibrary{arrows}
 
-\title{Three-Dimensional Attention for Video Classification}
+\title{Attention for video: An exploration in space and time}
 
-\author{
-Tim Cooijmans, Nicolas Ballas, Aaron Courville \\
-Universit\'e de Montr\'eal \\
-\texttt{\{tim.cooijmans,nicolas.ballas,aaron.courville\}@umontreal.ca}
-}
+%\author{
+%Tim Cooijmans, Nicolas Ballas, Aaron Courville \\
+%Universit\'e de Montr\'eal \\
+%\texttt{\{tim.cooijmans,nicolas.ballas,aaron.courville\}@umontreal.ca}
+%}
 
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
@@ -28,14 +28,31 @@ Universit\'e de Montr\'eal \\
 \maketitle
 
 \begin{abstract}
-We introduce a recurrent model for video classification that employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures. We show performance of our model on this dataset as well as on the UCF101 human activity recognition dataset.
+Motivated by recent success of visual attention architectures on images, we explore two recurrent models of visual attention on video domain. Our first model employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. Our second model employs a similar attention mechanism, but treats the video as a stream of images and applies a two-dimensional convolutional neural network. In addition, we introduce a synthetic video classification task that requires aggregation of information over time. Potentials of our dataset is measured by extensive set of experiments by three- and two- dimensional convolutional architectures. We also evaluate our models on the Cooking2 and UCF101 datasets.
+%We introduce a recurrent model for video classification that employs a differentiable spatiotemporal attention mechanism to apply a three-dimensional convolutional neural network to salient regions at varying resolutions. In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures. We show performance of our model on this dataset as well as on the UCF101 human activity recognition dataset.
 \end{abstract}
 
 \section{Introduction}
-
+The rest of the paper is organised as follows.
+Section \ref{Related} gives a brief summary of the recent action recognition approaches in the literature. 
+Section \ref{Our approach} presents our both models. In section \ref{datasets} we present our proposed CMV dataset and also briefly explain about the UCF101 and Cooking datasets. In section \ref{Results}, our experimental set-up and results on 3 datasets are presented.
 \section{Related work}
+\textbf{BoW and hand-crafting:} In the recent decade, action recognition is mostly tackled by applying bag-of-word (BoW) approaches on hand-crafted features. These hand-crafted features (e.g: hog, hof, mbh, SIFT, ...) are introduced and highly employed based on a long time experience of the computer vision community. 
 
-\section{Model description}
+\textbf{different alternatives of BoWs and their disadvantages:}These lower level hand-crafted features solely or combined with scenario-oriented high-level features in a BoW framework received much attention in the last decade. The main drawback of hand-crafted features in many cases is their case-based nature. As an example, for daily living action recognition a mixture of body-pose detection and hand-movements showed to be a good approach, while the same feature fails in scenarios which humans are not actively presented or their body is covered by clutters. The other drawbacks which can be count for BoW approach is the fact of ignoring the relation between low-level or high-level cues. In this way all the information related to the temporal and spatial dependencies are ignored. Involving the relation of visual-features later was tackled by engineering approaches. Some approaches tries to fill this gap by involving the temporal and spatial dependencies as features in their model. Some also tries to model the variation or structure of frames in the temporal domain. 
+
+\textbf{Convnet, different alternatives and their disadvantages} The significant success of deep neural network on image categorisation, which was the primary goal of computer vision, leads the video understanding approaches to alter the hand-carfted features to  Convnet features. Traditional neural network approaches behave movies as a collection of frames. In this way, it is not clear what is the event which is happening at every point or how the story of the movie evolves in time.
+
+\textbf{shortly, why attention is good on video- 1 or 2 sentence:}
+Despite all the success that convolutional neural networks achieved they are still computationally expensive for processing the high-resolution input images. This drawback was addressed by some recent image-categorisation work on visual attention-based models. These visual attention approaches reduce the number of parameters and computational operations by selecting informative regions of an image to focus on. In addition to computational speedups, attention-based models can filter the unnecessary information to the task up to a certain point.
+
+\textbf{attention in the state of the art for non-video tasks:}
+
+\textbf{attention in the state of the art for videos: if there is any:}
+
+\textbf{our decision of attention just in 1 or 2 sentences as a link to the next chapter}
+
+\section{Modle description 1}
 
 Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
 A glimpse corresponds to a three-dimensional hyperrectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than that of the video.
@@ -150,7 +167,26 @@ We have found this truncation to have little effect on training, while allowing 
 \label{fig:model}
 \end{figure}
 
-\section{Dataset}
+\section{Model description 2}
+Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
+Our model is built as an recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
+\begin{enumerate}
+\item We down-sample the frame $F_{t}$ with the $ds$ scale. Then this down-sampled frame is flattened to a vector, $DS_{F_{t}}$.
+\begin{equation}
+DS_{F_{t}}=Flatten(ds\times F_{t})
+\end{equation} 
+\item A concatenation of the previous time-step LSTM unit, location, scale and the down-sampled version of the current frame is given as an input to a 2 layers \textbf{multiple layer perceptron (mlp)}.
+\begin{equation}
+mlp-Input_{t}=Concat\left [h_{t-1}, L_{x_{t-1}},L_{y_{t-1}}, S_{t-1}, DS_{F_{t}}\right]
+\end{equation} 
+\begin{equation}
+mlp_Output_{t}=Concat\left [ L_{x_{t}}, L_{y_{t}}, S_{t}\right]
+\end{equation}
+where the output is a vector of 3 numbers.
+\item Our attention model takes the output of the mlp as input and gives back a cropped version of the frame, $F_{t}$ with a fixed size. Then the obtained attention is given to a pre-trained convent. The output vector of the pre-trained convent is concatenated by the location, $L_{t}$ and scale, $S_{t}$ of the attention at the current time-step. Then 4 copies of the obtained vector is given to the LSTM unit of $h_{t}$.
+\end{enumerate}
+\section{Datasets}
+\subsection{CMV: Cluttered MNIST Videos}
 
 We introduce a new fine-grained video classification dataset derived from the Cluttered MNIST dataset \cite{clutteredmnist}.
 The examples consist of MNIST digits placed on a larger canvas in the presence of clutter.
@@ -161,6 +197,11 @@ This ensures that no one frame displays the entire digit, and thus solving the t
 
 With this dataset we intend to bridge the gap between datasets such as KTH \cite{kth} and UCF101 \cite{ucf101} that have too few examples for the kinds of architectures we are interested in and large datasets like Sports-1M \cite{sports1m} and LSMDC \cite{lsmdc} that are too expensive to experiment on.
 
+\subsection{Modified MPII cooking2 dataset}
+\textbf{should be modified} The recent MPII cooking2 dataset is designed for the challenging task of fine-grained action recognition. 30 human subjects perform a large number of realistic cooking activities in 273 videos. Length of videos is over 27 hours. Most parts of the videos are annotated by an attribute among predefined 222 attributes. Attributes are 1. activities 2. tools 3. containers and 4. ingredients. The number of annotated samples is 14105. Each sample can have more than 1 label from different attribute categories. 
+How do we modify the dataset and why do we need modification for training a deep network on this dataset? 
+1) There are some samples that have only a few frames, and some which has over 5000 frames and only described by 1 attribute. As the first step of modification we remove the outliers from the dataset. Removing very short and long videos reduce the size of the dataset from 14105 to 8727.
+2) To train a deep model we need to have enough samples from each attribute categories. However we only have a few samples for many classes. So in order to use only the attributes that have enough samples we just choose 10 attribute labels that have the maximum number of samples and remove the rest. At the end, we have a dataset of 8046 samples and 10 attributes.
 \subsubsection*{Acknowledgments}
 
 WRITEME
