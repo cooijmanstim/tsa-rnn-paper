@@ -43,7 +43,7 @@ The resampling process is described in \ref{sec:resampling}.
 
 Each resampled glimpse $v^{(t)}$ is passed through a convolutional network, concatenated with its parameters $\theta^{(t)}$ and fed to a fully-connected network to obtain the input $x^{(t)}$ to the next step of the recurrent network.
 
-Like \cite{Ba2014}, we use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
+We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2014} to combine the information from previous glimpses and determine the location and scale of the next glimpse.
 
 Figure \ref{fig:model} shows a schematic view of the model.
 
@@ -69,7 +69,7 @@ $\phi( \delta, \sigma ) = \frac{1}{\sqrt{2 \pi}\sigma} \exp{- \frac{1}{2} \frac{
 Note that the kernel stride, standard deviation and intensity scaling factor are determined by a single scale parameter $s$.
 Disconnecting these parameters as is done in \cite{draw} would give the model the freedom to introduce severe resampling artifacts such as aliasing, unnecessary blurring and noise.
 The influence of $s$ on $\sigma$ is bounded to avoid too narrow kernels when zooming in beyond the native resolution of the input.
-The hyperparameter $\alpha$ trades off aliasing and blurring; after visual inspection of the quality of the patches we chose to set it to $0.5$.
+The hyperparameter $\alpha$ trades off aliasing and blurring; by visual inspection of the quality of the patches we chose to set it to $0.5$.
 
 \subsection{Kernel truncation}
 
@@ -154,9 +154,12 @@ We have found this truncation to have little effect on training, while allowing 
 
 We introduce a new fine-grained video classification dataset derived from the Cluttered MNIST dataset \cite{clutteredmnist}.
 The examples consist of MNIST digits placed on a larger canvas in the presence of clutter.
-Our dataset differs from Cluttered MNIST in that both the digits and the clutter move across the canvas.
+Both the digit and the clutter move across the canvas over time according to identical motion models, in which we uniformly sample a time $t$ and a location $x$ for the object in the interior of the video and extrapolate a linear trajectory based on a uniformly chosen velocity.
+
 Additionally, we partially occlude the digit by superimposing black bars perpendicular to its direction of travel.
-This ensures that no one frame displays the digit, and thus solving the task requires aggregation of information over time.
+This ensures that no one frame displays the entire digit, and thus solving the task requires aggregation of information over time.
+
+With this dataset we intend to bridge the gap between datasets such as KTH \cite{kth} and UCF101 \cite{ucf101} that have too few examples for the kinds of architectures we are interested in and large datasets like Sports-1M \cite{sports1m} and LSMDC \cite{lsmdc} that are too expensive to experiment on.
 
 \subsubsection*{Acknowledgments}
 
