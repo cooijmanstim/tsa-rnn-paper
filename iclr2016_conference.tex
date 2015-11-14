@@ -28,11 +28,14 @@
 \maketitle
 
 \begin{abstract}
-We explore two approaches for transferring the recent success of visual attention models on images to the video domain.
-Our first model employs a differentiable attention mechanism to apply a two-dimensional convolutional neural network to salient regions of consecutive frames at varying resolutions.
-Next, we generalize the attention mechanism to three dimensions and propose a second model that similarly applies a three-dimensional convolutional neural network to spatiotemporal regions of video.
-In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures.
-We evaluate our models on this task, as well as on the Cooking2 and UCF101 datasets.
+%We explore two approaches for transferring the recent success of visual attention models on images to the video domain.
+%Our first model employs a differentiable attention mechanism to apply a two-dimensional convolutional neural network to salient regions of consecutive frames at varying resolutions.
+%Next, we generalize the attention mechanism to three dimensions and propose a second model that similarly applies a three-dimensional convolutional neural network to spatiotemporal regions of video.
+%In addition, we introduce a synthetic video classification task that requires aggregation of information over time to solve, which is confirmed by comparison of the performance of three-dimensional and two-dimensional convolutional architectures.
+%We evaluate our models on this task, as well as on the Cooking2 and UCF101 datasets.
+Attention models have shown successful outputs on images. This work explores visual attention models on videos via two approaches: (i) our first model employs a differentiable attention mechanism to apply a two-dimensional convolutional neural network on salient regions of consecutive frames with varying resolutions.
+Next, (ii) we generalize the visual attention mechanism to three dimensional spaces for video understanding via involving a three-dimensional convolutional neural network to capture spatio-temporal information of videos.
+In addition, we introduce a synthetic video classification task that implies aggregation of temporal information to highlight the differences between three-dimensional and two-dimensional convolutional architectures. Moreover, we evaluate our models on the Cooking2 and UCF101 datasets.
 \end{abstract}
 
 \section{Introduction}
@@ -58,7 +61,7 @@ Despite all the success that convolutional neural networks achieved they are sti
 \section{Two-dimensional attention}
 
 Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
-Our model is built as an recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
+Our model is built as a recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
 \begin{enumerate}
 \item We down-sample the frame $F_{t}$ with the $ds$ scale. Then this down-sampled frame is flattened to a vector, $DS_{F_{t}}$.
 \begin{equation}
@@ -78,7 +81,7 @@ where the output is a vector of 3 numbers.
 \section{Three-dimensional attention}
 
 Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
-A glimpse corresponds to a three-dimensional hyperrectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than that of the video.
+A glimpse corresponds to a three-dimensional hyper-rectangular volume of video defined by location and scale parameters $\theta^{(t)}$, resampled to a representation of constant size much smaller than the original video.
 The resampling process is described in \ref{sec:resampling}.
 
 Each resampled glimpse $v^{(t)}$ is passed through a convolutional network, concatenated with its parameters $\theta^{(t)}$ and fed to a fully-connected network to obtain the input $x^{(t)}$ to the next step of the recurrent network.
