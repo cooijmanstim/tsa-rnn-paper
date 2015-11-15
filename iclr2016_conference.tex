@@ -39,6 +39,16 @@ In addition, we introduce a synthetic video classification task that implies agg
 \end{abstract}
 
 \section{Introduction}
+One of the drawbacks of the video datasets in the literature is the lack of variation in the temporal domain. In many cases a human can recognise the action or event from a single frame. Therefore, ignoring the temporal information of the video and having a strong spatial approach, such as Convnet can lead to a reasonable result. However in realistic scenarios humans should follow the events in the video to have a reasonable explanation of the scene. 
+
+For training different image processing systems, MNIST is a large and acceptable dataset. However there is no MNIST- like dataset for the video classification or summarization tasks. To bridge this gap, we propose and compare 3 MNIST-like video dataset, with the following features : 1) a single frame of each video shouldn't be sufficient for the task of classification 2) digits should smoothly and constantly move under clutters and the method should be able to recognize the digit among all random clutters. 
+
+%. However, it is not convenient to use this kind of datasets as toy dataset to find good approaches and hyper parameters for realistic data and datasets. MNIST is known as an acceptable toy example to try 
+ %there is a gap of having a good-enough toy example
+
+%Recently some datasets have been released for the task of video-captioning with high temporal variation
+
+
 The rest of the paper is organised as follows.
 Section \ref{Related} gives a brief summary of the recent action recognition approaches in the literature. 
 Section \ref{Our approach} presents our both models. In section \ref{datasets} we present our proposed CMV dataset and also briefly explain about the UCF101 and Cooking datasets. In section \ref{Results}, our experimental set-up and results on 3 datasets are presented.
