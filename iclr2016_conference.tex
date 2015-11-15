@@ -5,6 +5,8 @@
 \usepackage{pgf}
 \usepackage{tikz}
 \usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
 
 \usetikzlibrary{arrows}
 
@@ -41,7 +43,15 @@ In addition, we introduce a synthetic video classification task that implies agg
 \section{Introduction}
 One of the drawbacks of the video datasets in the literature is the lack of variation in the temporal domain. In many cases a human can recognise the action or event from a single frame. Therefore, ignoring the temporal information of the video and having a strong spatial approach, such as Convnet can lead to a reasonable result. However in realistic scenarios humans should follow the events in the video to have a reasonable explanation of the scene. 
 
-For training different image processing systems, MNIST is a large and acceptable dataset. However there is no MNIST- like dataset for the video classification or summarization tasks. To bridge this gap, we propose and compare 3 MNIST-like video dataset, with the following features : 1) a single frame of each video shouldn't be sufficient for the task of classification 2) digits should smoothly and constantly move under clutters and the method should be able to recognize the digit among all random clutters. 
+For training different image processing systems, MNIST is a large and acceptable dataset. However there is no MNIST- like dataset for the video classification or summarization tasks. To bridge this gap, we propose and compare 3 MNIST-like video dataset, with the following features : 1) a single frame of each video shouldn't be sufficient for the task of classification 2) digits should smoothly and constantly move under clutters and the method should be able to recognize the digit among all random clutters. Our 3 proposed MNIST- like datasets start from easy to difficult and present how our attention models and 2D and 3D convents perform on them. Our 2D attention model is not only able to classify the videos, it is able to track the area of attention and zoom on it through the video. Our 3D attention model find the cuboids of attention in both space and time. \\
+We firstly differentiable attention mechanism. 
+
+The contribution of this paper are the following:
+\begin{enumerate}
+\item We introduce a differentiable attention 2D and 3D mechanism for the task of video classification.
+\item We present 3 MNIS- like video datasets as CMV0, CVM1, and CMV2 to compare our models of attention and the state-of-the-art approaches.
+\end{enumerate}
+
 
 %. However, it is not convenient to use this kind of datasets as toy dataset to find good approaches and hyper parameters for realistic data and datasets. MNIST is known as an acceptable toy example to try 
  %there is a gap of having a good-enough toy example
@@ -69,7 +79,6 @@ Despite all the success that convolutional neural networks achieved they are sti
 \textbf{our decision of attention just in 1 or 2 sentences as a link to the next chapter}
 
 \section{Two-dimensional attention}
-
 Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
 Our model is built as a recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
 \begin{enumerate}
@@ -87,7 +96,7 @@ mlp_Output_{t}=Concat\left [ L_{x_{t}}, L_{y_{t}}, S_{t}\right]
 where the output is a vector of 3 numbers.
 \item Our attention model takes the output of the mlp as input and gives back a cropped version of the frame, $F_{t}$ with a fixed size. Then the obtained attention is given to a pre-trained convent. The output vector of the pre-trained convent is concatenated by the location, $L_{t}$ and scale, $S_{t}$ of the attention at the current time-step. Then 4 copies of the obtained vector is given to the LSTM unit of $h_{t}$.
 \end{enumerate}
-
+\includegraphics[width=17cm, height=12cm]{LSTM_2D_Attention_v2.png}
 \section{Three-dimensional attention}
 
 Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
