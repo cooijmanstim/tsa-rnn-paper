@@ -51,21 +51,22 @@ Recently, attention-based architectures is presented as a very powerful approach
 Motivated by human perception from a video and recent attention-based approaches, we propose two different recurrent architecture of visual attention for videos. Our attention mechanism is differentiable and is motivated by Draw-attention model.
 \begin{enumerate} 
 \item Our first approach lets every step of an RNN architecture with LSTM units choose where to look at next frame and learn the video label at the last step of the RNN. Our RNN has a low-resolution view of the whole frame at every step with a high-resolution view of predicted glimpse. Our model gradually learns where are the areas of interest in the video frames and by tracking them predicts a label for the given video.
-\item Our second approach, uses a 3 dimension of the same attention to find a cuboids area of attention. Then by applying an RNN architecture with GRU cells, predict the label of the video at every step of RNN.   
+\item Our second approach, uses a 3-dimensional version of the same attention mechanism to find cuboids of attention in video. Then by applying an RNN architecture with GRU cells, predict the label of the video at every step of RNN.   
 \end{enumerate}
 
-In order to compare our both models of attention, we introduce 2 MNIST like datasets as CMV1 and CMV2 for the task of video classification.
+In order to analyse and compare our both models of attention, we introduce 2 cluttered-MNIST like datasets as CMV1 and CMV2 for the task of video classification.
 %One of the drawbacks of the video datasets in the literature is the lack of variation in the temporal domain. In many cases a human can recognise the action or event from a single frame. Therefore, ignoring the temporal information of the video and having a strong spatial approach, such as Convnet can lead to a reasonable result. However in realistic scenarios humans should follow the events in the video to have a reasonable explanation of the scene. 
 
-For training different image processing systems, MNIST is a large and acceptable dataset. However there is no MNIST- like dataset for the video classification task. To bridge this gap, we propose 2 cluttered MNIST-like video datasets, with the following features : 1) a single frame of each video shouldn't be sufficient for the task of classification 2) digits should smoothly and constantly move under clutters and the method should be able to recognize the digit among all random clutters. CM1 is designed as a difficult video classification task, while CMV2 is relatively more difficult to tackle. Our 2D attention model is not only able to classify the videos, it is able to track the area of attention and zoom on it through the video in CM1 dataset which has less. Our 3D attention model find the cuboids of attention in both space and time. \\
+For training different image processing systems, MNIST is a large and acceptable dataset. However there is no MNIST- like dataset for the video classification task. To bridge this gap, we propose 2 cluttered MNIST-like video datasets, with the following features: 1) a single frame of each video shouldn't be sufficient for the task of classification 2) digits should smoothly and constantly move under clutters and the method should be able to recognize the digit among all random clutters. CM1 is designed as a difficult video classification task, while CMV2 is relatively more difficult to tackle. Our 2D attention model is not only able to classify the videos, it is able to track the area of attention and zoom on it through the video in CM1 dataset which has less. Our 3D attention model find the cuboids of attention in both space and time. \\
 We also compare the performance of our attention models with an average pooling on 2 and 3 dimensional Convnet over the video.
 %. However, it is not convenient to use this kind of datasets as toy dataset to find good approaches and hyper parameters for realistic data and datasets. MNIST is known as an acceptable toy example to try 
  %there is a gap of having a good-enough toy example
 
 %Recently some datasets have been released for the task of video-captioning with high temporal variation
 The rest of the paper is organised as follows.
-Section \ref{Related} gives a brief summary of the recent action recognition approaches in the literature. 
+Section \ref{Related} gives a brief summary of the recent video classification and attention-based approaches in the literature. 
 Section \ref{Our approach} presents our both models. In section \ref{datasets} we present our proposed CMV dataset and also briefly explain about the UCF101 and Cooking datasets. In section \ref{Results}, our experimental set-up and results on 3 datasets are presented.
+
 \section{Related work}
 \textbf{BoW and hand-crafting:} In the recent decade, action recognition is mostly tackled by applying bag-of-word (BoW) approaches on hand-crafted features. These hand-crafted features (e.g: hog, hof, mbh, SIFT, ...) are introduced and highly employed based on a long time experience of the computer vision community. 
 
