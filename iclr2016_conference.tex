@@ -82,13 +82,14 @@ Despite all the success that convolutional neural networks achieved they are sti
 \textbf{attention in the state of the art for videos: if there is any:}
 
 \textbf{our decision of attention just in 1 or 2 sentences as a link to the next chapter}
-\section{approach}
-The contribution of this paper are the following:
+\section{Background}
+\subsection{RNN, LSTM and GRU}
+The contributions of this paper are the following:
 \begin{enumerate}
-\item We introduce a differentiable attention 2D and 3D mechanism for the task of video classification.
+\item We introduce a differentiable 2D and 3D attention mechanism for the task of video classification.
 \item We present 2 MNIS- like video datasets as CVM1, and CMV2 to compare our models of attention and the state-of-the-art approaches.
 \end{enumerate}
-\section{Two-dimensional attention}
+\subsection{Two-dimensional attention}
 Let $V$ represents a video. $F=\left \{ F_{1}, F_{2}, ..., F_{n} \right \}$ denote frames of the video based on their time-order, where $F_{t}$ represents the frame at time-step $t$. We have a fixed scale as Downsampling Scale that we name it \textbf{ds}. The output of the LSTM units at every time-step ,$t$, is called as $h_{t}$. $L_{t}=\left \{ L_{x_{t}},L_{y_{t}} \right \}$ and $S_{t}$ are sequentially the locations and scales of the attention at time step of $t$.
 Our model is built as a recurrent model of visual attention. Consider that in our network we are at the time step $t$. We summarise our model as follow:
 \begin{enumerate}
@@ -127,7 +128,7 @@ Figure \ref{fig:model} shows a schematic view of the model.
 \section{Resampling}
 \label{sec:resampling}
 
-We employ a differential cropping operator similar to that used in DRAW \cite{draw}.
+We employ a differential cropping operator similar to that used in DRAW \cite{gregor2015draw}.
 It is explained here for the three-dimensional case in which the input is
 a video, but the application to two-dimensional video frames is similar.
 The intensity of each pixel in the glimpse is a linear combination of the intensities of all the pixels in the video, with coefficients determined by Gaussian kernels.
@@ -146,13 +147,13 @@ where $i$ is a glimpse pixel index, $\tilde{i}$ is a video pixel index, $m$ is t
 $\phi( \delta, \sigma ) = \frac{1}{\sqrt{2 \pi}\sigma} \exp{- \frac{1}{2} \frac{\delta^2}{\sigma^2}}$ is the Gaussian filter.
 
 Note that the kernel stride, standard deviation and intensity scaling factor are determined by a single scale parameter $s$.
-Disconnecting these parameters as is done in \cite{draw} would give the model the freedom to introduce severe resampling artifacts such as aliasing, unnecessary blurring and noise.
+Disconnecting these parameters as is done in \cite{gregor2015draw} would give the model the freedom to introduce severe resampling artefacts such as aliasing, unnecessary blurring and noise.
 The influence of $s$ on $\sigma$ is bounded to avoid too narrow kernels when zooming in beyond the native resolution of the input.
 The hyperparameter $\alpha$ trades off aliasing and blurring; by visual inspection of the quality of the patches we chose to set it to $0.5$.
 
 We further depart from \cite{draw} by truncating the Gaussian kernels at three deviations from their means.
 In practice we implement this by projecting the corners of the glimpse into the space of video indices and cropping a box around them with the desired margin.
-The outermost kernels are thus more truncated than the interior ones, and the pixels in the center of the glimpse are virtually untruncated.
+The outermost kernels are thus more truncated than the interior ones, and the pixels in the centre of the glimpse are virtually un-truncated.
 The resulting equations are still differentiable, with the gradient providing information on where to move inside the box.
 We have found this truncation to have little effect on training, while allowing significant computational savings.
 
