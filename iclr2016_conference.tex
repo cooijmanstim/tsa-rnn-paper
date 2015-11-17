@@ -68,10 +68,11 @@ Section \ref{Related} gives a brief summary of the recent video classification a
 Section \ref{Our approach} presents our both models. In section \ref{datasets} we present our proposed CMV dataset and also briefly explain about the UCF101 and Cooking datasets. In section \ref{Results}, our experimental set-up and results on 3 datasets are presented.
 
 \section{Related work}
-\textbf{BoW and hand-crafting:} In the recent decade, action recognition is mostly tackled by applying bag-of-word (BoW) approaches on hand-crafted features. These hand-crafted features (e.g: hog, hof, mbh, SIFT, ...) are introduced and highly employed based on a long time experience of the computer vision community. 
+\textbf{BoW and hand-crafting:} In the recent decade, action recognition is mostly tackled by applying bag-of-word (BoW) approaches on scenario-oriented high-level features such as human body-poses, and lower level features such as HoG, HoF, Mbh, and dense trajectories . These features are introduced and highly employed based on a long time experience of the computer vision community. The main drawback of hand-crafted features in many cases is their case-based nature. As an example, for daily living action recognition a mixture of body-pose detection and hand-movements showed to be a good approach, while the same feature fails in scenarios which humans are not actively presented or their body is covered by clutters. The other drawbacks which can be count for BoW approach is the fact of ignoring the relation between low-level or high-level cues. In this way all the information related to the temporal and spatial dependencies are ignored. Involving the relation of visual-features later was tackled by engineering approaches. Some approaches tries to fill this gap by involving the temporal and spatial dependencies as features in their model. Some also tries to model the variation or structure of frames in the temporal domain. 
 
-\textbf{different alternatives of BoWs and their disadvantages:}These lower level hand-crafted features solely or combined with scenario-oriented high-level features in a BoW framework received much attention in the last decade. The main drawback of hand-crafted features in many cases is their case-based nature. As an example, for daily living action recognition a mixture of body-pose detection and hand-movements showed to be a good approach, while the same feature fails in scenarios which humans are not actively presented or their body is covered by clutters. The other drawbacks which can be count for BoW approach is the fact of ignoring the relation between low-level or high-level cues. In this way all the information related to the temporal and spatial dependencies are ignored. Involving the relation of visual-features later was tackled by engineering approaches. Some approaches tries to fill this gap by involving the temporal and spatial dependencies as features in their model. Some also tries to model the variation or structure of frames in the temporal domain. 
+After the significant success of Convolutional Neural Networks (CNN) for the task of image classification, 
 
+\textbf{different alternatives of BoWs and their disadvantages:}These lower level hand-crafted features solely or combined with scenario-oriented high-level features in a BoW framework received much attention in the last decade. 
 \textbf{Convnet, different alternatives and their disadvantages} The significant success of deep neural network on image categorisation, which was the primary goal of computer vision, leads the video understanding approaches to alter the hand-carfted features to  Convnet features. Traditional neural network approaches behave movies as a collection of frames. In this way, it is not clear what is the event which is happening at every point or how the story of the movie evolves in time.
 
 \textbf{shortly, why attention is good on video- 1 or 2 sentence:}
@@ -107,7 +108,7 @@ mlp_Output_{t}=Concat\left [ L_{x_{t}}, L_{y_{t}}, S_{t}\right]
 where the output is a vector of 3 numbers.
 \item Our attention model takes the output of the mlp as input and gives back a cropped version of the frame, $F_{t}$ with a fixed size. Then the obtained attention is given to a pre-trained convent. The output vector of the pre-trained convent is concatenated by the location, $L_{t}$ and scale, $S_{t}$ of the attention at the current time-step. Then 4 copies of the obtained vector is given to the LSTM unit of $h_{t}$.
 \end{enumerate}
-\includegraphics[width=17cm, height=12cm]{LSTM_2D_Attention_v2.png}
+\includegraphics[width=17cm, height=14cm]{2d_attention.png}
 \section{Three-dimensional attention}
 
 Our model processes a video $V$ through a sequence of three-dimensional glimpses $\left(v^{(t)}\right)$.
@@ -120,15 +121,14 @@ We use a two-layer recurrent neural network with Gated Recurrent Units\cite{Cho2
 
 Figure \ref{fig:model} shows a schematic view of the model.
 
-\includegraphics[width=10cm, height=12cm]{3D}
+\includegraphics[width=17cm, height=12cm]{3d_attention.png}
 
 
 \include{threedfigure}
 
 \section{Resampling}
 \label{sec:resampling}
-
-We employ a differential cropping operator similar to that used in DRAW \cite{gregor2015draw}.
+We employ a differentiable cropping operator similar to that used in DRAW (\cite{gregor2015draw}).
 It is explained here for the three-dimensional case in which the input is
 a video, but the application to two-dimensional video frames is similar.
 The intensity of each pixel in the glimpse is a linear combination of the intensities of all the pixels in the video, with coefficients determined by Gaussian kernels.
